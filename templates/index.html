@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Normal Distribution Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px;
+      }
+
+      form {
+        margin-bottom: 20px;
+      }
+
+      canvas {
+        max-width: 800px;
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Normal Distribution Graph</h1>
+
+    <!-- User Input Form -->
+    <form id="inputForm">
+      <label for="mean">Mean (μ):</label>
+      <input
+        type="number"
+        id="mean"
+        name="mean"
+        value="0"
+        step="0.1"
+        required
+      />
+      <label for="std">Standard Deviation (σ):</label>
+      <input type="number" id="std" name="std" value="1" step="0.1" required />
+      <button type="submit">Generate Graph</button>
+    </form>
+
+    <!-- Chart -->
+    <canvas id="myChart"></canvas>
+
+    <script>
+      document
+        .getElementById("inputForm")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault(); // Prevent form from refreshing the page
+
+          // Get user inputs
+          const mean = parseFloat(document.getElementById("mean").value);
+          const std = parseFloat(document.getElementById("std").value);
+
+          try {
+            // Send POST request to the Flask backend
+            const response = await fetch(
+              "http://127.0.0.1:5000/normal-distribution",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ mean, std }),
+              },
+            );
+
+            // Get JSON response
+            // const data = await response.json();
+            const request_response = await response.json();
+            console.log(request_response);
+
+            const data = {
+              labels: request_response.x,
+              datasets: [
+                {
+                  label: "shit",
+                  data: request_response.y,
+                  fill: false,
+                  tension: 0.1,
+                },
+              ],
+            };
+
+            const config = {
+              type: "line",
+              data: data,
+            };
+
+            // Render Chart.js graph
+            const ctx = document.getElementById("myChart").getContext("2d");
+
+            // Destroy existing chart (if any)
+            // if (window.myChart) {
+            //   window.myChart.destroy();
+            // }
+
+            // Create new chart
+            window.myChart = new Chart(ctx, config);
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to generate the graph. Please try again.");
+          }
+        });
+    </script>
+  </body>
+</html>
